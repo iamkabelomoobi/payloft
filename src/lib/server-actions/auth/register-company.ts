@@ -33,26 +33,29 @@ export const registerCompany = async (input: CompanyRegisterSchema) => {
       },
     });
 
-    const company = await prisma.company.create({
-      data: {
-        name: companyName,
-        industry,
-        website,
-        phone,
-      },
-    });
+    await prisma.$transaction(async (tx) => {
+      const newCompany = await tx.company.create({
+        data: {
+          name: companyName,
+          industry,
+          website,
+          phone,
+        },
+      });
 
-    await prisma.companyMember.create({
-      data: {
-        userId: authResult.user.id,
-        companyId: company.id,
-        status: MemberStatus.ACTIVE,
-        role: CompanyRole.ADMIN,
-      },
+      await tx.companyMember.create({
+        data: {
+          userId: authResult.user.id,
+          companyId: newCompany.id,
+          status: MemberStatus.ACTIVE,
+          role: CompanyRole.ADMIN,
+        },
+      });
+
+      return newCompany;
     });
 
     return {
-      user: authResult.user,
       success: true,
       message: "Account created successfully.",
     };
