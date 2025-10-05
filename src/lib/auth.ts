@@ -5,7 +5,10 @@ import { nextCookies } from "better-auth/next-js";
 import { Resend } from "resend";
 import ForgotPasswordEmail from "./templates/auth/ForgotPasswordEmail";
 
-const resend = new Resend(process.env.RESEND_API_KEY as string);
+if (!process.env.RESEND_API_KEY) {
+  throw new Error("Missing RESEND_API_KEY environment variable");
+}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const authClient = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
