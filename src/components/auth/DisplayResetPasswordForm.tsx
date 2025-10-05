@@ -3,48 +3,62 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { resetPasswordSchema } from "@/lib/schema/auth/reset-password.schema";
+import {
+  resetPasswordSchema,
+  ResetPasswordSchema,
+} from "@/lib/schema/auth/reset-password.schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { resetPassword } from "@/lib/server-actions/auth/reset-password";
+import { redirect } from "next/navigation";
+
 
 export function DisplayResetPasswordForm({
   className,
+  token,
   ...props
-}: React.ComponentProps<"form">) {
-  const [form, setForm] = useState({ newPassword: "", confirmPassword: "" });
-  const [errors, setErrors] = useState<{
-    newPassword?: string;
-    confirmPassword?: string;
-  }>({});
+}: React.ComponentProps<"form"> & { token?: string }) {
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm((prev) => ({ ...prev, [e.target.id]: e.target.value }));
-    setErrors((prev) => ({ ...prev, [e.target.id]: undefined }));
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ResetPasswordSchema>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { newPassword: "", confirmPassword: "" },
+  });
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const result = resetPasswordSchema.safeParse(form);
-    if (!result.success) {
-      const fieldErrors: { newPassword?: string; confirmPassword?: string } =
-        {};
-      result.error.issues.forEach((err) => {
-        if (err.path[0] === "newPassword")
-          fieldErrors.newPassword = err.message;
-        if (err.path[0] === "confirmPassword")
-          fieldErrors.confirmPassword = err.message;
-      });
-      setErrors(fieldErrors);
-      return;
+  async function onSubmit(data: ResetPasswordSchema) {
+    try {
+      if (!token) {
+        toast.error("Invalid or missing token.");
+        return;
+      }
+      const response = await resetPassword(data.newPassword, 'kB7iypcOLIuBXaDjjoxf0orS');
+      if (!response.success) {
+        toast.error(response.message);
+        return;
+      }
+      toast.success(response.message);
+      reset();
+      redirect("/auth/login");
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      toast.error("An unexpected error occurred. Please try again.");
     }
-    setErrors({});
-    // TODO: handle successful password reset
   }
 
   return (
     <form
       className={cn("flex flex-col gap-6", className)}
       {...props}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
     >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
@@ -55,46 +69,70 @@ export function DisplayResetPasswordForm({
         </div>
         <Field>
           <FieldLabel htmlFor="newPassword">New Password</FieldLabel>
-          <Input
-            id="newPassword"
-            type="password"
-            placeholder="Enter new password"
-            value={form.newPassword}
-            onChange={handleChange}
-            required
-            aria-invalid={!!errors.newPassword}
-            aria-describedby={
-              errors.newPassword ? "newPassword-error" : undefined
-            }
-          />
+          <div className="relative w-full">
+            <Input
+              id="newPassword"
+              type={showNewPassword ? "text" : "password"}
+              placeholder="Enter new password"
+              {...register("newPassword")}
+              required
+              aria-invalid={!!errors.newPassword}
+              aria-describedby={errors.newPassword ? "newPassword-error" : undefined}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              aria-label={showNewPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowNewPassword((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center p-1 text-muted-foreground hover:text-foreground"
+              tabIndex={-1}
+            >
+              {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
           {errors.newPassword && (
             <span id="newPassword-error" className="text-red-500 text-xs">
-              {errors.newPassword}
+              {errors.newPassword.message as string}
             </span>
           )}
         </Field>
         <Field>
           <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
-          <Input
-            id="confirmPassword"
-            type="password"
-            placeholder="Confirm your password"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            required
-            aria-invalid={!!errors.confirmPassword}
-            aria-describedby={
-              errors.confirmPassword ? "confirmPassword-error" : undefined
-            }
-          />
+          <div className="relative w-full">
+            <Input
+              id="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm your password"
+              {...register("confirmPassword")}
+              required
+              aria-invalid={!!errors.confirmPassword}
+              aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowConfirmPassword((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center p-1 text-muted-foreground hover:text-foreground"
+              tabIndex={-1}
+            >
+              {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
           {errors.confirmPassword && (
             <span id="confirmPassword-error" className="text-red-500 text-xs">
-              {errors.confirmPassword}
+              {errors.confirmPassword.message as string}
             </span>
           )}
         </Field>
         <Field>
-          <Button type="submit">Reset Password</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              "Reset Password"
+            )}
+          </Button>
         </Field>
       </FieldGroup>
     </form>

@@ -3,41 +3,59 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { forgotPasswordSchema } from "@/lib/schema/auth/forgot-password.schema";
+import {
+  forgotPasswordSchema,
+  ForgotPasswordSchema,
+} from "@/lib/schema/auth/forgot-password.schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import { useState } from "react";
+import { forgotPassword } from "@/lib/server-actions/auth/forgot-password";
+import { Loader2 } from "lucide-react";
 
 export function DisplayForgotPasswordForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const [form, setForm] = useState({ email: "" });
-  const [errors, setErrors] = useState<{ email?: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm((prev) => ({ ...prev, [e.target.id]: e.target.value }));
-    setErrors((prev) => ({ ...prev, [e.target.id]: undefined }));
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ForgotPasswordSchema>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: "" },
+  });
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const result = forgotPasswordSchema.safeParse(form);
-    if (!result.success) {
-      const fieldErrors: { email?: string } = {};
-      result.error.issues.forEach((err) => {
-        if (err.path[0] === "email") fieldErrors.email = err.message;
-      });
-      setErrors(fieldErrors);
-      return;
+  const onSubmit = async (data: ForgotPasswordSchema) => {
+    setIsSubmitting(true);
+    try {
+      const response = await forgotPassword(data.email);
+
+      if (!response.success) {
+        toast.error(response.message);
+        return;
+      }
+
+      toast.success(response.message);
+      reset();
+    } catch (error) {
+      console.log("Error when sending forgot password linku:", error);
+      const errorMessage = "An unexpected error occurred. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
-    setErrors({});
-    // TODO: handle successful forgot password (call API, etc.)
-  }
+  };
 
   return (
     <form
       className={cn("flex flex-col gap-6", className)}
       {...props}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
     >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
@@ -52,20 +70,25 @@ export function DisplayForgotPasswordForm({
             id="email"
             type="email"
             placeholder="company@example.com"
-            value={form.email}
-            onChange={handleChange}
+            {...register("email")}
             required
             aria-invalid={!!errors.email}
             aria-describedby={errors.email ? "email-error" : undefined}
           />
           {errors.email && (
             <span id="email-error" className="text-red-500 text-xs">
-              {errors.email}
+              {errors.email.message as string}
             </span>
           )}
         </Field>
         <Field>
-          <Button type="submit">Send Reset Link</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              "Send Reset Link"
+            )}
+          </Button>
         </Field>
       </FieldGroup>
     </form>
