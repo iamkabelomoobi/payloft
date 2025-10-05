@@ -15,7 +15,6 @@ import { useState } from "react";
 import { resetPassword } from "@/lib/server-actions/auth/reset-password";
 import { redirect } from "next/navigation";
 
-
 export function DisplayResetPasswordForm({
   className,
   token,
@@ -40,7 +39,7 @@ export function DisplayResetPasswordForm({
         toast.error("Invalid or missing token.");
         return;
       }
-      const response = await resetPassword(data.newPassword, 'kB7iypcOLIuBXaDjjoxf0orS');
+      const response = await resetPassword(token, data.newPassword);
       if (!response.success) {
         toast.error(response.message);
         return;
@@ -77,7 +76,9 @@ export function DisplayResetPasswordForm({
               {...register("newPassword")}
               required
               aria-invalid={!!errors.newPassword}
-              aria-describedby={errors.newPassword ? "newPassword-error" : undefined}
+              aria-describedby={
+                errors.newPassword ? "newPassword-error" : undefined
+              }
               className="pr-10"
             />
             <button
@@ -106,12 +107,16 @@ export function DisplayResetPasswordForm({
               {...register("confirmPassword")}
               required
               aria-invalid={!!errors.confirmPassword}
-              aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
+              aria-describedby={
+                errors.confirmPassword ? "confirmPassword-error" : undefined
+              }
               className="pr-10"
             />
             <button
               type="button"
-              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              aria-label={
+                showConfirmPassword ? "Hide password" : "Show password"
+              }
               onClick={() => setShowConfirmPassword((v) => !v)}
               className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center p-1 text-muted-foreground hover:text-foreground"
               tabIndex={-1}
