@@ -17,7 +17,8 @@
     "prisma:format": "prisma format",
     "prisma:seed": "tsx prisma/seed/index.ts",
     "prisma:reset": "prisma migrate reset --force",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
