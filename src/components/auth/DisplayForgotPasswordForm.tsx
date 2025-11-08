@@ -1,7 +1,12 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   forgotPasswordSchema,
@@ -33,7 +38,7 @@ export function DisplayForgotPasswordForm({
   const onSubmit = async (data: ForgotPasswordSchema) => {
     setIsSubmitting(true);
     try {
-      const response = await forgotPassword(data.email);
+      const response = await forgotPassword({ email: data.email });
 
       if (!response.success) {
         toast.error(response.message);
@@ -89,6 +94,17 @@ export function DisplayForgotPasswordForm({
               "Send Reset Link"
             )}
           </Button>
+        </Field>
+        <Field>
+          <FieldDescription className="text-center">
+            Remember Password?{" "}
+            <a
+              href="/auth/login"
+              className="ml-auto text-sm underline hover:underline"
+            >
+              Sign in
+            </a>
+          </FieldDescription>
         </Field>
       </FieldGroup>
     </form>

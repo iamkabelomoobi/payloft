@@ -11,9 +11,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { resetPassword } from "@/lib/server-actions/auth/reset-password";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+
+const resetPasswordFormSchema = resetPasswordSchema.pick({ newPassword: true });
+type ResetPasswordFormValues = Pick<ResetPasswordSchema, "newPassword">;
 
 export function DisplayResetPasswordForm({
   className,
@@ -21,36 +24,80 @@ export function DisplayResetPasswordForm({
   ...props
 }: React.ComponentProps<"form"> & { token?: string }) {
   const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<ResetPasswordSchema>({
-    resolver: zodResolver(resetPasswordSchema),
-    defaultValues: { newPassword: "", confirmPassword: "" },
+  } = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordFormSchema),
+    defaultValues: { newPassword: "" },
   });
 
-  async function onSubmit(data: ResetPasswordSchema) {
+  useEffect(() => {
+    console.log("Token received in component:", token);
+    if (!token) {
+      toast.error(
+        "Invalid or missing reset token. Please request a new password reset link."
+      );
+    }
+  }, [token]);
+
+  async function onSubmit(data: ResetPasswordFormValues) {
+    console.log("Form submitted with data:", data);
+    console.log("Token being used:", token);
+
     try {
       if (!token) {
-        toast.error("Invalid or missing token.");
+        console.error("No token provided");
+        toast.error(
+          "Invalid or missing token. Please request a new password reset link."
+        );
         return;
       }
-      const response = await resetPassword(token, data.newPassword);
+
+      console.log("Calling resetPassword with token:", token);
+      const response = await resetPassword({
+        token,
+        newPassword: data.newPassword,
+      });
+
+      console.log("Reset password response:", response);
+
       if (!response.success) {
         toast.error(response.message);
         return;
       }
+
       toast.success(response.message);
       reset();
-      redirect("/auth/login");
+      router.push("/auth/login");
     } catch (error) {
       console.error("Error resetting password:", error);
       toast.error("An unexpected error occurred. Please try again.");
     }
+  }
+
+  if (!token) {
+    return (
+      <div className={cn("flex flex-col gap-6", className)}>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h1 className="text-2xl font-bold">Invalid Reset Link</h1>
+          <p className="text-muted-foreground text-sm">
+            The password reset link is invalid or has expired. Please request a new
+            one.
+          </p>
+          <Button
+            onClick={() => router.push("/auth/forgot-password")}
+            className="mt-4"
+          >
+            Request New Link
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -74,7 +121,6 @@ export function DisplayResetPasswordForm({
               type={showNewPassword ? "text" : "password"}
               placeholder="Enter new password"
               {...register("newPassword")}
-              required
               aria-invalid={!!errors.newPassword}
               aria-describedby={
                 errors.newPassword ? "newPassword-error" : undefined
@@ -86,7 +132,6 @@ export function DisplayResetPasswordForm({
               aria-label={showNewPassword ? "Hide password" : "Show password"}
               onClick={() => setShowNewPassword((v) => !v)}
               className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center p-1 text-muted-foreground hover:text-foreground"
-              tabIndex={-1}
             >
               {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
@@ -98,42 +143,12 @@ export function DisplayResetPasswordForm({
           )}
         </Field>
         <Field>
-          <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
-          <div className="relative w-full">
-            <Input
-              id="confirmPassword"
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirm your password"
-              {...register("confirmPassword")}
-              required
-              aria-invalid={!!errors.confirmPassword}
-              aria-describedby={
-                errors.confirmPassword ? "confirmPassword-error" : undefined
-              }
-              className="pr-10"
-            />
-            <button
-              type="button"
-              aria-label={
-                showConfirmPassword ? "Hide password" : "Show password"
-              }
-              onClick={() => setShowConfirmPassword((v) => !v)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center p-1 text-muted-foreground hover:text-foreground"
-              tabIndex={-1}
-            >
-              {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-          {errors.confirmPassword && (
-            <span id="confirmPassword-error" className="text-red-500 text-xs">
-              {errors.confirmPassword.message as string}
-            </span>
-          )}
-        </Field>
-        <Field>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? (
-              <Loader2 className="size-4 animate-spin" />
+              <>
+                <Loader2 className="size-4 animate-spin mr-2" />
+                Resetting...
+              </>
             ) : (
               "Reset Password"
             )}

@@ -1,13 +1,15 @@
 "use server";
 
 import { authClient } from "@/lib/auth";
+import { ResetPasswordSchema } from "@/lib/schema";
 
-export const resetPassword = async (token: string, newPassword: string) => {
+export const resetPassword = async (input: ResetPasswordSchema) => {
+  const { token, newPassword } = input;
   try {
     await authClient.api.resetPassword({
       body: {
-        token,
         newPassword,
+        token
       },
     });
 

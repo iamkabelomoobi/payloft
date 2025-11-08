@@ -2,18 +2,16 @@
 
 import { authClient } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { LoginSchema } from "@/lib/schema";
 
-export const logIn = async (
-  email: string,
-  password: string,
-  rememberMe = false
-) => {
+export const logIn = async (input: LoginSchema) => {
+  const { email, password, rememberMe } = input;
   try {
-    const user = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
-    if (!user) {
+    if (!existingUser) {
       return {
         success: false,
         message: "Invalid username or password.",

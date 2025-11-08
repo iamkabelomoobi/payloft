@@ -2,8 +2,10 @@
 
 import { authClient } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ForgotPasswordSchema } from "@/lib/schema";
 
-export const forgotPassword = async (email: string) => {
+export const forgotPassword = async (input: ForgotPasswordSchema) => {
+  const { email } = input;
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {

@@ -2,14 +2,15 @@ import { DisplayResetPasswordForm } from "@/components/auth/DisplayResetPassword
 import { redirect } from "next/navigation";
 
 interface SearchParams {
-  searchParams: { token?: string };
+  searchParams: Promise<{ token?: string }>;
 }
 
-const Page = ({ searchParams }: SearchParams) => {
-  const token = searchParams?.token;
+const Page = async ({ searchParams }: SearchParams) => {
+  const { token } = await searchParams;
   if (!token) {
     redirect("/auth/forgot-password");
   }
+
   return <DisplayResetPasswordForm token={token} />;
 };
 

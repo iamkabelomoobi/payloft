@@ -1,9 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  Command,
-} from "lucide-react";
+import { Command } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavProjects } from "@/components/nav-projects";
@@ -19,16 +17,14 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import data from "@/assets/sidebar-data";
-
+import { Company, User } from "@/generated/prisma";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  user: any;
+  user: Partial<User> | null;
+  company: Partial<Company> | null;
 }
 
-export function AppSidebar({ user, ...props }: AppSidebarProps) {
-  console.log("User in AppSidebar:", user.CompanyMember);
-  const company = user?.CompanyMember[0]?.company;
+export function AppSidebar({ user, company, ...props }: AppSidebarProps) {
   return (
     <Sidebar
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"

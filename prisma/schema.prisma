@@ -11,21 +11,67 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+}
 
 model User {
   id            String   @id @default(cuid())
-  name          String?
+  name          String
   email         String   @unique
   emailVerified Boolean  @default(false)
   image         String?
+  role          UserRole @default(ADMIN)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 
-  sessions      Session[]
-  accounts      Account[]
-  CompanyMember CompanyMember[]
+  sessions Session[]
+  accounts Account[]
+  Admin    Admin[]
 
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
   @@map("user")
+}
+
+model Admin {
+  id String @id @default(cuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?
+
+  @@unique([userId, companyId])
+  @@index([userId])
+  @@index([companyId])
+  @@map("admin")
+}
+
+model Company {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  industry String
+  website  String?
+  logo     String?
+
+  email   String?
+  phone   String?
+  address String?
+
+  members Admin[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
+
+  @@index([name])
+  @@index([industry])
+  @@index([createdAt])
+  @@map("company")
 }
 
 model Session {
@@ -61,6 +107,7 @@ model Account {
   @@map("account")
 }
 
+
 model Verification {
   id         String   @id
   identifier String
@@ -70,66 +117,4 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
-}
-
-model CompanyMember {
-  id        String      @id @default(cuid())
-  userId    String
-  companyId String
-  role      CompanyRole @default(ADMIN)
-
-  title      String?
-  department String?
-  joinedAt   DateTime     @default(now())
-  invitedAt  DateTime?
-  invitedBy  String?
-  status     MemberStatus @default(ACTIVE)
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, companyId])
-  @@index([userId])
-  @@index([companyId])
-  @@index([role])
-  @@index([status])
-  @@map("company_member")
-}
-
-model Company {
-  id       String  @id @default(cuid())
-  name     String  @unique
-  industry String
-  website  String?
-  logo     String?
-
-  email   String?
-  phone   String?
-  address String?
-
-  members CompanyMember[]
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
-  deletedAt DateTime?
-
-  @@index([name])
-  @@index([industry])
-  @@index([createdAt])
-  @@map("company")
-}
-
-enum CompanyRole {
-  OWNER
-  ADMIN
-  MANAGER
-  MEMBER
-  GUEST
-}
-
-enum MemberStatus {
-  INVITED
-  ACTIVE
-  INACTIVE
-  SUSPENDED
 }

@@ -1,6 +1,5 @@
 "use server";
 import { headers } from "next/headers";
-
 import { authClient } from "@/lib/auth";
 
 export const logOut = async () => {

@@ -28,7 +28,7 @@ import { useRouter } from "next/navigation";
 import { logOut } from "@/lib/server-actions/auth/logout";
 import type { User } from "@/generated/prisma";
 
-export function NavUser({ user }: { user?: User }) {
+export function NavUser({ user }: { user?: Partial<User> | null }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
 

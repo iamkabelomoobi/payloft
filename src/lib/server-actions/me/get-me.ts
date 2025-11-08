@@ -9,7 +9,6 @@ export const getMe = async () => {
     const session = await authClient.api.getSession({
       headers: await headers(),
     });
-
     if (!session?.user?.id) {
       return {
         success: false,
@@ -17,33 +16,57 @@ export const getMe = async () => {
       };
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    const admin = await prisma.admin.findFirst({
+      where: {
+        userId: session.user.id,
+      },
       include: {
-        accounts: true,
-        sessions: true,
-        CompanyMember: {
-          include: { company: true },
+        user: {
+          select: {
+            id: true,
+            image: true,
+            name: true,
+            email: true,
+            role: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            address: true,
+            industry: true,
+            website: true,
+            logo: true,
+            createdAt: true,
+            updatedAt: true,
+          },
         },
       },
     });
 
-    if (!user) {
+    console.log("Fetched admin:", admin);
+
+    if (!admin) {
       return {
         success: false,
-        message: "User not found",
+        message: "Admin not found",
       };
     }
 
     return {
       success: true,
-      data: user,
+      data: admin,
     };
   } catch (error) {
-    console.error("Error fetching user data:", error);
+    console.error("Error fetching admin:", error);
     return {
       success: false,
-      message: "An unexpected error occurred. Please try again.",
+      message: "Internal server error",
     };
   }
 };

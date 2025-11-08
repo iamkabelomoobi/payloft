@@ -1,34 +1,49 @@
+"use client";
 import { AppSidebar } from "@/components/app-sidebar";
+import Dashboard from "@/components/dashboard/Dashboard";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Company, User } from "@/generated/prisma";
 import { getMe } from "@/lib/server-actions/me/get-me";
 import { redirect } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { DashboardTab } from "../types/dashboard";
 
-const DashboardPage = async () => {
-  const response = await getMe();
+const DashboardPage = () => {
+  const [user, setUser] = useState<Partial<User> | null>(null);
+  const [company, setCompany] = useState<Partial<Company> | null>(null);
+  const [activeTab, setActiveTab] = useState<DashboardTab>(
+    DashboardTab.ACCOUNT
+  );
 
-  if (!response.success) {
-    redirect("/auth/login");
-  }
+  useEffect(() => {
+    const fetchUser = async () => {
+      const response = await getMe();
+      if (!response.success) {
+        redirect("/auth/login");
+      }
+      setUser(response?.data?.user ?? null);
+      setCompany(response?.data?.company ?? null);
+    };
+    fetchUser();
+  }, []);
 
-  const user = response.data;
+  const renderTab = useMemo(() => {
+    switch (activeTab) {
+      case DashboardTab.DASHBOARD:
+        return <Dashboard />;
+      default:
+        return <Dashboard />;
+    }
+  }, [activeTab]);
 
   return (
     <div className="[--header-height:calc(--spacing(14))]">
       <SidebarProvider className="flex flex-col">
         <SiteHeader />
         <div className="flex flex-1">
-          <AppSidebar user={user} />
-          <SidebarInset>
-            <div className="flex flex-1 flex-col gap-4 p-4">
-              <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div className="bg-muted/50 aspect-video rounded-xl" />
-                <div className="bg-muted/50 aspect-video rounded-xl" />
-                <div className="bg-muted/50 aspect-video rounded-xl" />
-              </div>
-              <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
-            </div>
-          </SidebarInset>
+          <AppSidebar user={user} company={company} />
+          <SidebarInset>{renderTab}</SidebarInset>
         </div>
       </SidebarProvider>
     </div>

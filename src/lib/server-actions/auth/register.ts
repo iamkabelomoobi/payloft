@@ -1,11 +1,10 @@
 "use server";
 
-import { CompanyRole, MemberStatus } from "@/generated/prisma";
-import { authClient } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { CompanyRegisterSchema } from "@/lib/schema/auth/company-register.schema";
+import { authClient } from "@/lib/auth";
+import { RegisterSchema } from "@/lib/schema";
 
-export const registerCompany = async (input: CompanyRegisterSchema) => {
+export const register = async (input: RegisterSchema) => {
   const {
     companyName,
     industry,
@@ -16,15 +15,19 @@ export const registerCompany = async (input: CompanyRegisterSchema) => {
     lastName,
     password,
   } = input;
+
   try {
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
     if (existingUser) {
-      return { success: false, message: "User with this email already exists" };
+      return {
+        success: false,
+        message: "Account already exists, please login.",
+      };
     }
 
-    const authResult = await authClient.api.signUpEmail({
+    const { user } = await authClient.api.signUpEmail({
       body: {
         name: `${firstName} ${lastName}`,
         email,
@@ -43,12 +46,10 @@ export const registerCompany = async (input: CompanyRegisterSchema) => {
         },
       });
 
-      await tx.companyMember.create({
+      await tx.admin.create({
         data: {
-          userId: authResult.user.id,
+          userId: user.id,
           companyId: newCompany.id,
-          status: MemberStatus.ACTIVE,
-          role: CompanyRole.ADMIN,
         },
       });
 

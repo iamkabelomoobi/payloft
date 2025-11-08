@@ -13,18 +13,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useState } from "react";
-import {
-  companyRegisterSchema,
-  CompanyRegisterSchema,
-} from "@/lib/schema/auth/company-register.schema";
-import { registerCompany } from "@/lib/server-actions/auth/register-company";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { registerSchema, RegisterSchema } from "@/lib/schema";
+import { register as registerUser } from "@/lib/server-actions/auth/register";
 
 export function DisplayRegisterForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -34,8 +32,8 @@ export function DisplayRegisterForm({
     setError,
     formState: { errors },
     reset,
-  } = useForm<CompanyRegisterSchema>({
-    resolver: zodResolver(companyRegisterSchema),
+  } = useForm<RegisterSchema>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       companyName: "",
       industry: "",
@@ -48,10 +46,10 @@ export function DisplayRegisterForm({
     },
   });
 
-  const onSubmit = async (data: CompanyRegisterSchema) => {
+  const onSubmit = async (data: RegisterSchema) => {
     setIsSubmitting(true);
     try {
-      const response = await registerCompany(data);
+      const response = await registerUser(data);
 
       if (!response.success) {
         toast.error(response.message);
@@ -225,15 +223,27 @@ export function DisplayRegisterForm({
 
           <Field>
             <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              {...register("password")}
-              required
-              aria-invalid={!!errors.password}
-              aria-describedby={errors.password ? "password-error" : undefined}
-            />
+            <div className="relative w-full">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+                required
+                aria-invalid={!!errors.password}
+                aria-describedby={
+                  errors.password ? "password-error" : undefined
+                }
+                className="pr-10"
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                onClick={() => setShowPassword((s) => !s)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center p-1 text-muted-foreground hover:text-foreground"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             {errors.password && (
               <span id="password-error" className="text-red-500 text-xs">
                 {errors.password.message}

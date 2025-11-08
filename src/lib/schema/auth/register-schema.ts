@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const userRegisterSchema = z.object({
+export const registerSchema = z.object({
   firstName: z
     .string()
     .min(2, { message: "First name must be at least 2 characters" })
@@ -22,6 +22,22 @@ export const userRegisterSchema = z.object({
     .string()
     .min(10, { message: "Phone number must be at least 10 digits" })
     .max(10, { message: "Phone number must be at most 10 digits" }),
+  companyName: z
+    .string()
+    .min(3, { message: "Company name must be at least 3 characters" })
+    .max(100, { message: "Company name must be at most 100 characters" })
+    .regex(/^[A-Za-z0-9\s&.,-]+$/, {
+      message:
+        "Company name can only contain letters, numbers, spaces, and basic punctuation",
+    }),
+  industry: z
+    .string()
+    .min(3, { message: "Industry must be at least 3 characters" })
+    .max(100, { message: "Industry must be at most 100 characters" }),
+  website: z
+    .url({ message: "Please enter a valid website URL" })
+    .optional()
+    .or(z.literal("")),
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters" })
@@ -31,4 +47,4 @@ export const userRegisterSchema = z.object({
     }),
 });
 
-export type UserRegisterSchema = z.infer<typeof userRegisterSchema>;
+export type RegisterSchema = z.infer<typeof registerSchema>;
