@@ -12,6 +12,7 @@ import { DashboardTab } from "../types/dashboard";
 const DashboardPage = () => {
   const [user, setUser] = useState<Partial<User> | null>(null);
   const [company, setCompany] = useState<Partial<Company> | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeTab, setActiveTab] = useState<DashboardTab>(
     DashboardTab.ACCOUNT
   );
