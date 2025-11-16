@@ -18,13 +18,20 @@ import {
 } from "@/components/ui/sidebar";
 import data from "@/assets/sidebar-data";
 import { Company, User } from "@/generated/prisma";
+import { DashboardTab } from "@/app/types/dashboard";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user: Partial<User> | null;
   company: Partial<Company> | null;
+  setActiveTab: (tab: DashboardTab) => void;
 }
 
-export function AppSidebar({ user, company, ...props }: AppSidebarProps) {
+export function AppSidebar({
+  user,
+  company,
+  setActiveTab,
+  ...props
+}: AppSidebarProps) {
   return (
     <Sidebar
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
@@ -48,12 +55,12 @@ export function AppSidebar({ user, company, ...props }: AppSidebarProps) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={data.navMain} setActiveTab={setActiveTab} />
         <NavProjects projects={data.projects} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={user} setActiveTab={setActiveTab} />
       </SidebarFooter>
     </Sidebar>
   );

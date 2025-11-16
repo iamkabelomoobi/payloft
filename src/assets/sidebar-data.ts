@@ -1,8 +1,9 @@
+import { DashboardTab } from "@/app/types/dashboard";
 import {
   Users,
   FileText,
   CreditCard,
-  BarChart2,
+  LayoutDashboard,
   Settings2,
   Wallet,
   FileSpreadsheet,
@@ -16,24 +17,11 @@ import {
 const data = {
   navMain: [
     {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: BarChart2,
+      title:
+        DashboardTab.DASHBOARD.charAt(0).toUpperCase() +
+        DashboardTab.DASHBOARD.slice(1),
+      icon: LayoutDashboard,
       isActive: true,
-      items: [
-        {
-          title: "Overview",
-          url: "/dashboard/overview",
-        },
-        {
-          title: "Reports",
-          url: "/dashboard/reports",
-        },
-        {
-          title: "Analytics",
-          url: "/dashboard/analytics",
-        },
-      ],
     },
     {
       title: "Clients",
@@ -210,7 +198,7 @@ const data = {
     {
       name: "Marketing Reports",
       url: "/projects/marketing",
-      icon: BarChart2,
+      icon: LayoutDashboard,
     },
   ],
 };

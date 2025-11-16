@@ -18,7 +18,6 @@ const AuthLayout = async ({ children }: AuthLayoutProps) => {
   const session = await authClient.api.getSession({ headers: await headers() });
 
   if (session) {
-    console.log("Session exists, redirecting to dashboard.");
     redirect("/dashboard");
   }
 
@@ -26,7 +25,7 @@ const AuthLayout = async ({ children }: AuthLayoutProps) => {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="relative hidden lg:block rounded-xl overflow-hidden ml-8 mt-12 mb-12">
         <Image
-          src={"/background/auth/auth-background.jpg"}
+          src={"/background/auth/background-0.jpg"}
           alt="Login Image"
           fill
           className="object-cover dark:brightness-[0.2] dark:grayscale"

@@ -5,7 +5,6 @@ import {
   ChevronsUpDown,
   CreditCard,
   LogOut,
-  Sparkles,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,8 +26,15 @@ import {
 import { useRouter } from "next/navigation";
 import { logOut } from "@/lib/server-actions/auth/logout";
 import type { User } from "@/generated/prisma";
+import { DashboardTab } from "@/app/types/dashboard";
 
-export function NavUser({ user }: { user?: Partial<User> | null }) {
+export function NavUser({
+  user,
+  setActiveTab,
+}: {
+  user?: Partial<User> | null;
+  setActiveTab: (tab: DashboardTab) => void;
+}) {
   const { isMobile } = useSidebar();
   const router = useRouter();
 
@@ -88,14 +94,11 @@ export function NavUser({ user }: { user?: Partial<User> | null }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setActiveTab(DashboardTab.ACCOUNT);
+                }}
+              >
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>
