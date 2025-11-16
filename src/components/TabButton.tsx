@@ -1,25 +1,22 @@
-"use client";
-import React, { useState } from "react";
+import React from "react";
 
-const TabButton: React.FC<{ id: string; label: string }> = ({ id, label }) => {
-  const [active, setActive] = useState<string | null>(null);
-  React.useEffect(() => {
-    const saved = window.localStorage.getItem("settingsActiveTab");
-    setActive(saved || "profile");
-  }, []);
+interface TabButtonProps {
+  id: string;
+  label: string;
+  activeTab: string;
+  onChange: (id: string) => void;
+}
 
-  const handleClick = () => {
-    setActive(id);
-    window.localStorage.setItem("settingsActiveTab", id);
-    const evt = new CustomEvent("settings:tab-change", { detail: id });
-    window.dispatchEvent(evt);
-  };
-
-  const isActive = active === id;
-
+const TabButton: React.FC<TabButtonProps> = ({
+  id,
+  label,
+  activeTab,
+  onChange,
+}) => {
+  const isActive = activeTab === id;
   return (
     <button
-      onClick={handleClick}
+      onClick={() => onChange(id)}
       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
         isActive
           ? "bg-primary text-primary-foreground"

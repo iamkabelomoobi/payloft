@@ -88,7 +88,6 @@ const Company: React.FC<CompanyProps> = ({ company }) => {
     setLocalCompany(company ?? null);
   }, [company]);
 
-  // Whenever localCompany changes, sync form values
   useEffect(() => {
     reset({
       name: localCompany?.name ?? "",
@@ -133,13 +132,13 @@ const Company: React.FC<CompanyProps> = ({ company }) => {
       }
 
       reset({
-        name: refreshedCompany?.name ?? data.name,
-        industry: refreshedCompany?.industry ?? data.industry,
-        email: refreshedCompany?.email ?? data.email,
-        phone: refreshedCompany?.phone ?? data.phone,
-        address: refreshedCompany?.address ?? data.address,
-        website: refreshedCompany?.website ?? data.website,
-        logo: refreshedCompany?.logo ?? data.logo,
+        name: refreshedCompany?.name ?? "",
+        industry: refreshedCompany?.industry ?? "",
+        email: refreshedCompany?.email ?? "",
+        phone: refreshedCompany?.phone ?? "",
+        address: refreshedCompany?.address ?? "",
+        website: refreshedCompany?.website ?? "",
+        logo: refreshedCompany?.logo ?? undefined,
       });
 
       toast.success("Company updated successfully");

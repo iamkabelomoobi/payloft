@@ -4,7 +4,7 @@ import Dashboard from "@/components/dashboard/Dashboard";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Company, User } from "@/generated/prisma";
-import { getMe } from "@/lib/server-actions/me/get-me";
+import { getProfile } from "@/lib/server-actions/profile/get-profile";
 import { redirect } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { DashboardTab } from "../types/dashboard";
@@ -23,7 +23,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const response = await getMe();
+      const response = await getProfile();
 
       if (!response.success) {
         redirect("/auth/login");

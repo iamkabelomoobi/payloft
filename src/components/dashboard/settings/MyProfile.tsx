@@ -13,8 +13,7 @@ import {
   UpdateProfile as UpdateProfileType,
   updateProfile as updateProfileSchema,
 } from "@/lib/schema/profile/update-profile";
-import { updateProfile as updateProfileAction } from "@/lib/server-actions/me/update-profile";
-import { getMe } from "@/lib/server-actions/me/get-me";
+import { updateProfile, getProfile } from "@/lib/server-actions";
 import { useProfile } from "@/context/profile-context";
 import { useCompany } from "@/context/company-context";
 
@@ -114,21 +113,24 @@ const MyProfile: React.FC<MyProfileProps> = ({ admin, company }) => {
 
     try {
       setIsSaving(true);
-      const result = await updateProfileAction(userId, data);
+      const result = await updateProfile(userId, data);
 
       if (!result || !result.success) {
         toast.error(result?.message ?? "Failed to update profile");
         return;
       }
 
-      const refreshed = await getMe();
+      const refreshed = await getProfile();
       const adminData =
         refreshed && typeof refreshed === "object" && "data" in refreshed
           ? refreshed.data
           : null;
 
+      const user = adminData?.user;
+      const phone = adminData?.phone;
+
       try {
-        setUser(adminData?.user ?? null);
+        setUser(user ?? null);
       } catch (e) {
         console.warn("Failed to set global user", e);
       }
@@ -139,11 +141,15 @@ const MyProfile: React.FC<MyProfileProps> = ({ admin, company }) => {
         console.warn("Failed to set global company", e);
       }
 
+      const nameParts = user?.name?.split(" ") ?? ["", ""];
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(" ");
+
       reset({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
+        firstName: firstName ?? "",
+        lastName: lastName ?? "",
+        email: user?.email ?? "",
+        phone: phone ?? "",
       });
 
       toast.success("Profile updated successfully");
