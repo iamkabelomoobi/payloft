@@ -64,7 +64,7 @@ const fields = [
 
 const Company: React.FC<CompanyProps> = ({ company }) => {
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading] = useState<boolean>(false); // you can wire real loading if needed
+  const [isLoading] = useState<boolean>(false);
   const [localCompany, setLocalCompany] = useState<ICompany | null>(
     company ?? null
   );
