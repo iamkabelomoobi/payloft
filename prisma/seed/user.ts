@@ -64,6 +64,7 @@ export const seedUsers = async (): Promise<void> => {
             data: {
               userId: user.id,
               companyId: newCompany.id,
+              phone: userData.phone,
             },
           });
         });
