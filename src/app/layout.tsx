@@ -31,7 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
-        <SpeedInsights />
+        {process.env.NODE_ENV === "production" && <SpeedInsights />}
         <Toaster
           position="top-right"
           richColors
